@@ -1,0 +1,3 @@
+[submodule "wedo2"]
+	path = wedo2
+	url = https://github.com/uriyay/micropython-wedo2
