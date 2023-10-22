@@ -11,6 +11,7 @@ config = json.load(open("config.json"))
 
 PORT = 7777
 TIMEOUT_MS = 300
+WEDO2_TIMEOUT_MS = 7000
 
 
 def init_network():
@@ -76,7 +77,7 @@ class CNC:
             print('got data: {}'.format(data))
             if req_addrinfo == addrinfo:
                 return data
-            cur = tick_ms()
+            cur = ticks_ms()
         raise Exception("Socket timeout!")
 
     def handle_client(self, client, addrinfo):
@@ -97,9 +98,21 @@ class CNC:
                 try:
                     self.wedo = wedo2.Wedo2()
                     self.wedo.scan()
-                    self.response(
-                        client, addrinfo, {"res": "0", "msg": "wedo2 connected!"}
-                    )
+                    start_time = ticks_ms()
+                    cur_time = start_time
+                    while cur_time - start_time <= WEDO2_TIMEOUT_MS:
+                        if self.wedo.is_connected():
+                            break
+                        sleep(0.1)
+                        cur_time = ticks_ms()
+                    if self.wedo.is_connected():
+                        self.response(
+                                client, addrinfo, {"res": "0", "msg": "wedo2 connected!"}
+                            )
+                    else:
+                        self.response(
+                                client, addrinfo, {"res": "1", "msg": "Failed to connect wedo2, got timeout"}
+                            )
                 except Exception as e:
                     self.response(
                         client,

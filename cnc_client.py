@@ -75,6 +75,7 @@ if __name__ == '__main__':
     c = CNCClient()
     c.connect()
     c.echo()
+    _ = input('Power on wedo2 car and press ENTER')    
     c.wedo2_connect()
     c.up()
     sleep(3)
