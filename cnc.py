@@ -16,12 +16,12 @@ WEDO2_TIMEOUT_MS = 7000
 
 def init_network():
     # Notice that Windows blocks incoming connections..
-    wlan.active(True)
     if not wlan.isconnected():
+        wlan.active(True)
         print("connecting to network...")
         wlan.connect(config["SSID"], config["PASSWORD"])
         while not wlan.isconnected():
-            pass
+            sleep(0.1)
 
     wlan_config = wlan.ifconfig()
     print("network config:", wlan_config)
@@ -140,6 +140,14 @@ class CNC:
                             },
                         )
                     self.wedo = None
+            elif cmd["cmd"] == "is_connected":
+                is_connected = False
+                if self.wedo is not None:
+                    is_connected = self.wedo.is_connected()
+                print('is_connected = %s' % (is_connected))
+                self.response(
+                            client, addrinfo, {"res": "0", "msg": str(is_connected)}
+                        )
             elif cmd["cmd"] == "up":
                 if not self.wedo:
                     self.response(

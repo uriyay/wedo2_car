@@ -58,6 +58,12 @@ class CNCClient:
     def wedo2_disconnect(self):
         self.send_command({'cmd': 'disconnect'})
 
+    def wedo2_is_connected(self):
+        resp = self.send_command({'cmd': 'is_connected'})
+        if resp['msg'] == 'True':
+            return True
+        return False
+
     def up(self):
         self.send_command({'cmd': 'up'})
 
@@ -75,8 +81,11 @@ if __name__ == '__main__':
     c = CNCClient()
     c.connect()
     c.echo()
-    _ = input('Power on wedo2 car and press ENTER')    
-    c.wedo2_connect()
+    for i in range(5):
+        _ = input('Power on wedo2 car and press ENTER')
+        c.wedo2_connect()
+        if c.wedo2_is_connected():
+            break
     c.up()
     sleep(3)
     c.wedo2_disconnect()
