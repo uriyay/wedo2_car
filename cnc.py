@@ -1,10 +1,12 @@
 import json
 import network
+import esp32
 import socket
 import struct
 from time import sleep, ticks_ms
 
 import wedo2
+import ultrasonic
 
 wlan = network.WLAN(network.STA_IF)
 config = json.load(open("config.json"))
@@ -35,6 +37,14 @@ class CNC:
         self.wlan_config = init_network()
         self.ip = self.wlan_config[0]
         self.wedo = None
+        self.ultrasonic = None
+        self.setup_ultrasonic()
+
+    def setup_ultrasonic(self):
+        if config['USE_ULTRASONIC'] == 'True':
+            trigger_pin = config['ULTRASONIC_TRIGGER_PIN']
+            echo_pin = config['ULTRASONIC_ECHO_PIN']
+            self.ultrasonic = ultrasonic.UltraSonic(trigger_pin, echo_pin)
 
     def advertise(self):
         sock = socket.socket(
@@ -223,6 +233,16 @@ class CNC:
                         self.response(
                             client, {"res": "1", "msg": "left failed: " + str(e)}
                         )
+
+            elif cmd["cmd"] == "distance":
+                if not self.ultrasonic:
+                    self.response(
+                        client, addrinfo, {"res": "1", "msg": "ultrasonic not configured"}
+                    )
+                else:
+                    self.response(
+                        client, addrinfo, {"res": "0", "msg": str(self.ultrasonic.get_distance())}
+                    )
 
 
 c = CNC()

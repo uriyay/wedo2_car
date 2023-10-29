@@ -76,11 +76,19 @@ class CNCClient:
     def left(self):
         self.send_command({'cmd': 'left'})
 
+    def get_distance(self):
+        resp = self.send_command({'cmd': 'distance'})
+        if resp['res'] == 1:
+            raise Exception('Cannot get distance, ultrasonic sensor is not configured')
+        distance = float(resp['msg'])
+        return distance
+
 
 if __name__ == '__main__':
     c = CNCClient()
     c.connect()
     c.echo()
+    print('distance = ' + str(c.get_distance()))
     for i in range(5):
         _ = input('Power on wedo2 car and press ENTER')
         c.wedo2_connect()
